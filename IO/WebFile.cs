@@ -70,6 +70,7 @@ namespace AlumniStaticWeb.IO
         public WebFile(string path)
         {
             Path = path;
+            _content = Compress(Content);
         }
     }
 }

@@ -12,21 +12,14 @@ namespace AlumniStaticWeb
         static void Main(string[] args)
         {
             Environment.CurrentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/WWW/";
+
             if (Debugger.IsAttached)
                 Servers.Start(8888);
             else
-            {
-                try
-                {
-                    Servers.Start(80);
-                }
-                catch
-                {
-                    Servers.Start(8888);
-                }
-            }
-            foreach (var enumerateFileSystemEntry in Directory.GetFiles(Environment.CurrentDirectory, "*.*", SearchOption.AllDirectories))
-                MemoryCache.GetFile(enumerateFileSystemEntry);
+                Servers.Start(80);
+
+            foreach (var file in Directory.GetFiles(Environment.CurrentDirectory, "*.*", SearchOption.AllDirectories))
+                MemoryCache.GetFile(file);
 
             TransferQueue.Start();
 

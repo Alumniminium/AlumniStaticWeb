@@ -1,6 +1,8 @@
-﻿using System;
+﻿using System.Net.Http.Headers;
+using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 using AlumniStaticWeb.Sockets.HTTP;
 
 namespace AlumniStaticWeb.Sockets
@@ -36,19 +38,19 @@ namespace AlumniStaticWeb.Sockets
             }
         }
 
-        public void Send(byte[] packet, int size)
+        public Task Send(byte[] packet, int size)
         {
             try
             {
                 if (packet == null || Socket == null || !Connected)
-                    return;
-
-                Socket.BeginSend(packet, 0, packet.Length, SocketFlags.None, null, null);
+                    return Task.CompletedTask;
+                return Task.Factory.FromAsync(Socket.BeginSend(packet, 0, size, SocketFlags.None, null, null), Socket.EndSend);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
                 Disconnect();
+                return Task.CompletedTask;
             }
         }
 

@@ -4,14 +4,14 @@ namespace AlumniStaticWeb
 {
     public class Chunk
     {
-        private static byte[] _header;
-        private static byte[] _footer = System.Text.Encoding.ASCII.GetBytes("\r\n");
+        private byte[] _header;
+        private byte[] _footer = System.Text.Encoding.UTF8.GetBytes("\r\n");
         private byte[] _data;
         public int Size => _data.Length;
-        private Chunk() => _data = System.Text.Encoding.ASCII.GetBytes("0\r\n\r\n");
+        private Chunk() => _data = System.Text.Encoding.UTF8.GetBytes("0\r\n\r\n");
         private Chunk(byte[] data, int size)
         {
-            _header = System.Text.Encoding.ASCII.GetBytes(size.ToString("x") + "\r\n");
+            _header = System.Text.Encoding.UTF8.GetBytes(size.ToString("x") + "\r\n");
             _data = new byte[size + _header.Length + _footer.Length];
             Buffer.BlockCopy(_header, 0, _data, 0, _header.Length);
             Buffer.BlockCopy(data, 0, _data, _header.Length, size);

@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Collections.Concurrent;
 using System.IO;
+using AlumniStaticWeb.Sockets.HTTP;
 
 namespace AlumniStaticWeb.Sockets
 {
@@ -22,32 +23,42 @@ namespace AlumniStaticWeb.Sockets
             Block.Set();
         }
 
-        public static void Loop()
+        public static async void Loop()
         {
             while (true)
             {
-                if (Queue.TryDequeue(out var client))
+                try
                 {
-                    using (var stream = File.OpenRead(client.Path))
+                    if (Queue.TryDequeue(out var client))
                     {
-                        stream.Seek(client.Offset, SeekOrigin.Begin);
-                        var buffer = new byte[1024*625];
-                        int readBytes = stream.Read(buffer, 0, buffer.Length);
-                        client.Offset += readBytes;
-                        Console.WriteLine($"Creating chunk from {stream.Position-readBytes} to {stream.Position} for {System.IO.Path.GetFileName(client.Path)}");
-                        var chunk = Chunk.Create(buffer, readBytes);
-                        client.ForceSend(chunk, chunk.Size);
-
-                        if (stream.Position == stream.Length)
+                        using (var stream = new MemoryStream(client.File.Content))
                         {
-                            var lastChunk = Chunk.CreateLast();
-                            client.ForceSend(lastChunk, lastChunk.Size);
-                            client.ClientSocket.Disconnect();
+                            if (client.Offset == 0)
+                            {
+                                var header = PacketHandler.GenerateHeader(200, client.File.MimeType);
+                                await client.ForceSend(header, header.Length);
+                            }
+                            stream.Seek(client.Offset, SeekOrigin.Begin);
+                            var buffer = new byte[1024 * 1024];
+                            int readBytes = stream.Read(buffer, 0, buffer.Length);
+                            client.Offset += readBytes;
+
+                            var chunk = Chunk.Create(buffer, readBytes);
+                            await client.ForceSend(chunk, chunk.Size);
+
+
+                            if (stream.Position == stream.Length)
+                            {
+                                var lastChunk = Chunk.CreateLast();
+                                await client.ForceSend(lastChunk, lastChunk.Size);
+                                client.ClientSocket.Disconnect();
+                            }
                         }
+                        if (client.ClientSocket.Connected)
+                            Add(client);
                     }
-                    if (client.ClientSocket.Connected)
-                        Add(client);
                 }
+                catch { }
                 Thread.Sleep(1);
             }
         }
