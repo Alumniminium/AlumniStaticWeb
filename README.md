@@ -1,4 +1,4 @@
-# Static Webserver <T> 
+# Static Webserver\<T\> 
 *because its so generic*
 
 The question on your mind is probably "Why?"
