@@ -31,11 +31,10 @@ namespace AlumniStaticWeb.Sockets
                     using (var stream = File.OpenRead(client.Path))
                     {
                         stream.Seek(client.Offset, SeekOrigin.Begin);
-                        Console.WriteLine($"Creating chunk from {stream.Position}  for {System.IO.Path.GetFileName(client.Path)}");
-
                         var buffer = new byte[1024*625];
                         int readBytes = stream.Read(buffer, 0, buffer.Length);
                         client.Offset += readBytes;
+                        Console.WriteLine($"Creating chunk from {stream.Position-readBytes} to {stream.Position} for {System.IO.Path.GetFileName(client.Path)}");
                         var chunk = Chunk.Create(buffer, readBytes);
                         client.ForceSend(chunk, chunk.Size);
 
@@ -49,7 +48,7 @@ namespace AlumniStaticWeb.Sockets
                     if (client.ClientSocket.Connected)
                         Add(client);
                 }
-                Thread.Sleep(1000);
+                Thread.Sleep(1);
             }
         }
     }

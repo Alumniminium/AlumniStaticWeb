@@ -13,7 +13,7 @@ namespace AlumniStaticWeb.Sockets
         {
             var sw = Stopwatch.StartNew();
             int statusCode = 200;
-            var request = Encoding.ASCII.GetString(packet).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+            var request = Encoding.UTF8.GetString(packet).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
             var requestUri = request[0].Split(' ')[1].Split('?')[0];
             int range = 0;
             foreach (var lin in request)
@@ -31,7 +31,7 @@ namespace AlumniStaticWeb.Sockets
                 requestUri = requestUri.Remove(0, 1);
             if (requestUri.EndsWith("ip"))
             {
-                var response = Encoding.ASCII.GetBytes(client.ClientSocket.GetIP());
+                var response = Encoding.UTF8.GetBytes(client.ClientSocket.GetIP());
                 statusCode = 206;
                 var header = GenerateHeader(statusCode, "text/plain", "Identity");
                 client.ForceSend(header, header.Length);
@@ -62,18 +62,17 @@ namespace AlumniStaticWeb.Sockets
 
             }
         }
-        //TODO: Chunked transfer for downloads / streaming 
         private static byte[] GenerateHeader(int statusCode, string contentType, string contentEncoding = "gzip")
         {
             var header = "HTTP/1.1 " + statusCode + " OK" + "\r\n";
             header += "Server: AlumniStaticWebServer 1.0\r\n";
-            header += "Content-Type: " + contentType + "; charset=ascii\r\n";
+            header += "Content-Type: " + contentType + "; charset=utf-8\r\n";
             header += "Accept-Ranges: none\r\n";
             header += "Content-Encoding: " + contentEncoding + "\r\n";
             header += "Cache-Control: max-age=2592000\r\n";
             header += "Transfer-Encoding: chunked\r\n\r\n";
 
-            return Encoding.ASCII.GetBytes(header);
+            return Encoding.UTF8.GetBytes(header);
         }
     }
 }

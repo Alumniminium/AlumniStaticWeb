@@ -25,7 +25,7 @@ namespace AlumniStaticWeb.Sockets
         {
             try
             {
-                Connected=false;
+                Connected = false;
                 ServerSocket.InvokeDisconnect(this);
             }
             finally
@@ -42,7 +42,7 @@ namespace AlumniStaticWeb.Sockets
                 if (packet == null || Socket == null || !Connected)
                     return;
 
-                Socket.BeginSend(packet,0,packet.Length,SocketFlags.None,null,null);
+                Socket.BeginSend(packet, 0, packet.Length, SocketFlags.None, null, null);
             }
             catch (Exception e)
             {
@@ -50,10 +50,15 @@ namespace AlumniStaticWeb.Sockets
                 Disconnect();
             }
         }
-        
+
         public void AsyncReceive(IAsyncResult ar)
         {
-            ReceiveBuffer = (byte[]) ar.AsyncState;
+            ReceiveBuffer = (byte[])ar.AsyncState;
+            if (Socket == null)
+            {
+                Disconnect();
+                return;
+            }
             try
             {
                 RecvSize = Socket.EndReceive(ar, out var error);
