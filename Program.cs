@@ -26,10 +26,10 @@ namespace AlumniStaticWeb
                 }
             }
             foreach (var enumerateFileSystemEntry in Directory.GetFiles(Environment.CurrentDirectory, "*.*", SearchOption.AllDirectories))
-                Cache.GetFile(enumerateFileSystemEntry);
+                MemoryCache.GetFile(enumerateFileSystemEntry);
 
             TransferQueue.Start();
-            
+
             while (true)
                 Console.ReadLine();
         }

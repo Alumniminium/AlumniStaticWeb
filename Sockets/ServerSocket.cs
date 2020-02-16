@@ -9,7 +9,7 @@ namespace AlumniStaticWeb.Sockets
     {
         public Action<Client, byte[]> OnReceive;
         public Socket Socket;
-        
+
         public void Enable(ushort port)
         {
             Socket.Blocking = false;
@@ -26,7 +26,7 @@ namespace AlumniStaticWeb.Sockets
             if (clientSocket == null)
                 return;
 
-            if (clientSocket.Socket !=null && clientSocket.Socket.Connected)
+            if (clientSocket.Socket != null && clientSocket.Socket.Connected)
                 clientSocket.Socket.Close();
             else
                 clientSocket.Ref = null;

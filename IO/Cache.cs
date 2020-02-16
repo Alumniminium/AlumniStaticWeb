@@ -2,9 +2,9 @@
 
 namespace AlumniStaticWeb.IO
 {
-    public class Cache
+    public class MemoryCache
     {
-        public static ConcurrentDictionary<string,WebFile> CachedFiles = new ConcurrentDictionary<string, WebFile>();
+        public static ConcurrentDictionary<string, WebFile> CachedFiles = new ConcurrentDictionary<string, WebFile>();
 
         public static WebFile GetFile(string name)
         {

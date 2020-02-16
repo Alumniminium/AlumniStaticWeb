@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using AlumniStaticWeb.IO;
 
-namespace AlumniStaticWeb.Sockets
+namespace AlumniStaticWeb.Sockets.HTTP
 {
     public static class PacketHandler
     {

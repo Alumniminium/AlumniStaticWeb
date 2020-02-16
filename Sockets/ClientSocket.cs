@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using AlumniStaticWeb.Sockets.HTTP;
 
 namespace AlumniStaticWeb.Sockets
 {
     public class ClientSocket : MarshalByRefObject
     {
         public bool Connected = true;
-        public byte[] ReceiveBuffer = new byte[850];
+        public byte[] ReceiveBuffer = new byte[1024]; // 1kb per client should do, I don't support POST anyways
         public int RecvSize;
         public Socket Socket;
         public Client Ref;
@@ -16,8 +17,8 @@ namespace AlumniStaticWeb.Sockets
         public ClientSocket(Socket socket)
         {
             Socket = socket;
-            Socket.Blocking = true;
-            Socket.NoDelay = true;
+            Socket.Blocking = false;
+            Socket.NoDelay = true; // I have a TransferQueue
             Socket.DontFragment = true;
         }
 
@@ -53,21 +54,18 @@ namespace AlumniStaticWeb.Sockets
 
         public void AsyncReceive(IAsyncResult ar)
         {
-            ReceiveBuffer = (byte[])ar.AsyncState;
-            if (Socket == null)
-            {
-                Disconnect();
-                return;
-            }
             try
             {
+                ReceiveBuffer = (byte[])ar.AsyncState;
                 RecvSize = Socket.EndReceive(ar, out var error);
 
                 if (error == SocketError.Success && RecvSize > 0)
                 {
+                    // surprisingly that's faster than Array.Copy/Buffer.BlockCopy
                     var packet = new byte[RecvSize];
-                    Buffer.BlockCopy(ReceiveBuffer, 0, packet, 0, RecvSize);
+                    ReceiveBuffer.AsSpan().Slice(0, RecvSize).CopyTo(packet.AsSpan());
                     PacketHandler.Handle(Ref, packet);
+
                     Socket?.BeginReceive(ReceiveBuffer, 0, ReceiveBuffer.Length, SocketFlags.None, AsyncReceive, ReceiveBuffer);
                 }
                 else
@@ -80,7 +78,6 @@ namespace AlumniStaticWeb.Sockets
                     Console.WriteLine($"Disconnect Reason: {ex.Message} \r\n {ex.StackTrace}");
                     Console.WriteLine(ex);
                 }
-
                 Disconnect();
             }
         }
@@ -90,7 +87,7 @@ namespace AlumniStaticWeb.Sockets
             if (string.IsNullOrEmpty(IP))
             {
                 if (Socket == null)
-                    return "";
+                    return null;
                 var remoteIpEndPoint = Socket?.RemoteEndPoint as IPEndPoint;
                 IP = remoteIpEndPoint?.Address.ToString();
             }

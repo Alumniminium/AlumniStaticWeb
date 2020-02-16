@@ -569,7 +569,7 @@ namespace AlumniStaticWeb.IO
             {".xwd", "image/x-xwindowdump"},
             {".z", "application/x-compress"},
             {".zip", "application/x-zip-compressed"},
-
+            // what did you expect to find at the bottom?
         };
     }
 }
